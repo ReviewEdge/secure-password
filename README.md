@@ -1,2 +1,2 @@
 # secure-password
-A project on secure password storage for password authentication
+Password authentication and storage with SHA-512 hashing.
