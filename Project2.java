@@ -70,6 +70,9 @@ public class Project2 {
             }
         }
         fileScn.close();
+
+        printToFile();
+
     }
 
     // This function runs a loop which is the bulk of the program
@@ -80,7 +83,6 @@ public class Project2 {
         try {
             //Initializations
             Scanner scn = new Scanner(System.in);
-            PrintWriter out = new PrintWriter("Project2PW.txt");
 
             while(true){
 
@@ -90,9 +92,7 @@ public class Project2 {
 
                 // Handles quiting and saving data
                 if(input.toLowerCase().equals("quit")){
-                    printToFile(out);
-                    out.flush();
-                    out.close();
+                    printToFile();
                     break;
                 }
                 // Handles the "help" command which prints all valid commands
@@ -104,23 +104,18 @@ public class Project2 {
                 // Splits command into pieces for addUser
                 // Prints "Success" or "Error" based on outcome
                 else if(input.length() >= 8 && input.substring(0,8).toLowerCase().equals("add-user")){
-                    if(input.contains(":")){
-                        System.out.println("Invalid username or password, : may not be used");
+                    String[] splitInput = input.split(" ");
+                    if (splitInput.length != 3){
+                        System.out.println("Invalid Syntax");
                     }
                     else {
-                        String[] splitInput = input.split(" ");
-                        if (splitInput.length != 3){
-                            System.out.println("Invalid Syntax");
+                        String user = splitInput[1];
+                        String pw = splitInput[2];
+                        if(addUser(user, pw)){
+                            System.out.println("Success");
                         }
-                        else {
-                            String user = splitInput[1];
-                            String pw = splitInput[2];
-                            if(addUser(user, pw)){
-                                System.out.println("Success");
-                            }
-                            else{
-                                System.out.println("Error");
-                            }
+                        else{
+                            System.out.println("Error");
                         }
                     }
                 }
@@ -190,7 +185,7 @@ public class Project2 {
         String salt = Base64.getEncoder().encodeToString(getSalt().getBytes());
         salts.add(salt);
         pwHashes.add(hashSha512(pw, salt));
-        
+
         return true;
     }
 
@@ -216,13 +211,13 @@ public class Project2 {
             // to calculate message digest of the input string
             // returned as array of byte
             byte[] messageDigest = md.digest(saltyInput.getBytes());
-  
+
             // Convert byte array into signum representation
             BigInteger no = new BigInteger(1, messageDigest);
-  
+
             // Convert message digest into hex value
             String hashtext = no.toString(16);
-  
+
             // Add preceding 0s to make it 32 bit
             while (hashtext.length() < 32) {
                 hashtext = "0" + hashtext;
@@ -234,7 +229,7 @@ public class Project2 {
             // return the hashtext
             return b64Hashtext;
         }
-  
+
         // For specifying wrong message digest algorithms
         catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
@@ -276,11 +271,14 @@ public class Project2 {
     }
 
     // Prints the three arrays to the file
-    public void printToFile(PrintWriter out){
+    public void printToFile() throws FileNotFoundException {
+        PrintWriter out = new PrintWriter("Project2PW.txt");
         if(users.size() == pwHashes.size()) {
             for (int i = 0; i < users.size(); i++)
                 out.print(users.get(i) + ":" + "$6$" + salts.get(i) + "$" + pwHashes.get(i) + "\n");
         }
+        out.flush();
+        out.close();
     }
 
     // Prints help commands
