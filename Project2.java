@@ -25,7 +25,7 @@ public class Project2 {
         }
     }
 
-    // Creates an object with 2 arrays, one of users, and one of hashed/salted passwords
+    // Creates an object with 3 arrays, one of users, and one of hashed/salted passwords, and one with the corresponding salt
     // It then reads in all values from the given file "Project2PW.txt" and adds the parts to the correct arrays
     // If the password file does not already exist, it creates one
     // Throws an exception if it could not create a file
@@ -267,7 +267,7 @@ public class Project2 {
         return false;
     }
 
-    // Prints the two arrays to System.Out in the format they are printed to the file
+    // Prints the three arrays to System.Out in the format they are printed to the file
     public void print(){
         if(users.size() == pwHashes.size()) {
             for (int i = 0; i < users.size(); i++)
@@ -275,7 +275,7 @@ public class Project2 {
         }
     }
 
-    // Prints the two arrays to the file
+    // Prints the three arrays to the file
     public void printToFile(PrintWriter out){
         if(users.size() == pwHashes.size()) {
             for (int i = 0; i < users.size(); i++)
