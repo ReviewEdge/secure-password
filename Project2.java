@@ -65,8 +65,8 @@ public class Project2 {
 
             if(splitLn.length == 2) {
                 users.add(splitLn[0]);
-                salts.add(hashing[1]);
-                pwHashes.add(hashing[2]);
+                salts.add(hashing[2]);
+                pwHashes.add(hashing[3]);
             }
         }
         fileScn.close();
