@@ -61,10 +61,7 @@ public class Project2 {
         while(fileScn.hasNextLine()){
             String ln = fileScn.nextLine();
             String[] splitLn = ln.split(":");
-
             String[] hashing = splitLn[1].split("\\$");
-
-            System.out.println(hashing[2]);
 
             if(splitLn.length == 2) {
                 users.add(splitLn[0]);
