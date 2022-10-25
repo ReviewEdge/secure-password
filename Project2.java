@@ -17,16 +17,12 @@ public class Project2 {
     private ArrayList<String> pwHashes;
     private ArrayList<String> salts;
     public static void main(String[] args) throws FileNotFoundException{
-
-        Project2 pwc = new Project2();
-        pwc.runLoop();
-
-        // try{
-        //     Project2 pwc = new Project2();
-        //     pwc.runLoop();
-        // } catch (Exception e){
-        //     System.out.println(e.toString());
-        // }
+        try{
+            Project2 pwc = new Project2();
+            pwc.runLoop();
+        } catch (Exception e){
+            System.out.println(e.toString());
+        }
     }
 
     // Creates an object with 2 arrays, one of users, and one of hashed/salted passwords
