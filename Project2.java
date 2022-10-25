@@ -2,28 +2,32 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Scanner;
 
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 public class Project2 {
 
     private ArrayList<String> users;
     private ArrayList<String> pwHashes;
+    private ArrayList<String> salts;
+    public static void main(String[] args) throws FileNotFoundException{
 
+        Project2 pwc = new Project2();
+        pwc.runLoop();
 
-
-    public static void main(String[] args){
-        try{
-            Project2 pwc = new Project2();
-            pwc.runLoop();
-        } catch (Exception e){
-            System.out.println(e.toString());
-        }
+        // try{
+        //     Project2 pwc = new Project2();
+        //     pwc.runLoop();
+        // } catch (Exception e){
+        //     System.out.println(e.toString());
+        // }
     }
-
 
     // Creates an object with 2 arrays, one of users, and one of hashed/salted passwords
     // It then reads in all values from the given file "Project2PW.txt" and adds the parts to the correct arrays
@@ -55,14 +59,21 @@ public class Project2 {
         // Instantiates arrays
         users = new ArrayList<>();
         pwHashes = new ArrayList<>();
+        salts = new ArrayList<>();
 
         // Fills the arrays from the password file
         while(fileScn.hasNextLine()){
             String ln = fileScn.nextLine();
             String[] splitLn = ln.split(":");
+
+            String[] hashing = splitLn[1].split("\\$");
+
+            System.out.println(hashing[2]);
+
             if(splitLn.length == 2) {
                 users.add(splitLn[0]);
-                pwHashes.add(splitLn[1]);
+                salts.add(hashing[1]);
+                pwHashes.add(hashing[2]);
             }
         }
         fileScn.close();
@@ -172,34 +183,46 @@ public class Project2 {
                     System.out.println("Unknown command");
                 }
             }
+            scn.close();
         } catch(Exception e){
             throw e;
         }
-
     }
 
-
+    // gets user input for username and password and stores password as hash
     public boolean addUser(String user, String pw){
-
-        // Temporary for testing
-
-        System.out.println("\n" + pw + " : " + encryptThisString(pw));
-
         users.add(user);
-        pwHashes.add(pw);
+
+        // gets random Base64 salt
+        String salt = Base64.getEncoder().encodeToString(getSalt().getBytes());
+        salts.add(salt);
+        pwHashes.add(hashSha512(pw, salt));
+        
         return true;
     }
 
-    public static String encryptThisString(String input)
+    // generates random salt
+    private String getSalt() {
+        byte[] byteArray = new byte[8];
+        new SecureRandom().nextBytes(byteArray);
+        String salt = new String(byteArray, Charset.forName("UTF-8"));
+        return salt;
+    }
+
+    // converts string to SHA-512 hash, in Base64
+    private String hashSha512(String input, String salt)
     {
         try {
+            // applies salt
+            String saltyInput = input + salt;
+
             // getInstance() method is called with algorithm SHA-512
             MessageDigest md = MessageDigest.getInstance("SHA-512");
-  
+
             // digest() method is called
             // to calculate message digest of the input string
             // returned as array of byte
-            byte[] messageDigest = md.digest(input.getBytes());
+            byte[] messageDigest = md.digest(saltyInput.getBytes());
   
             // Convert byte array into signum representation
             BigInteger no = new BigInteger(1, messageDigest);
@@ -211,9 +234,12 @@ public class Project2 {
             while (hashtext.length() < 32) {
                 hashtext = "0" + hashtext;
             }
-  
-            // return the HashText
-            return hashtext;
+
+            // converts password to Base64
+            String b64Hashtext = Base64.getEncoder().encodeToString(hashtext.getBytes());
+
+            // return the hashtext
+            return b64Hashtext;
         }
   
         // For specifying wrong message digest algorithms
@@ -222,12 +248,13 @@ public class Project2 {
         }
     }
 
+    // checks if hash of input password is equal to stored hash
     public boolean checkPassword(String user, String pw){
-
-        //Temporary for testing
         int index = users.indexOf(user);
+        String checkSalt = salts.get(index);
+
         if(index != -1){
-            return pwHashes.get(index).equals(pw);
+            return pwHashes.get(index).equals(hashSha512(pw, checkSalt));
         }
         return false;
     }
@@ -240,6 +267,7 @@ public class Project2 {
             if(index != -1) {
                 users.remove(index);
                 pwHashes.remove(index);
+                salts.remove(index);
                 return true;
             }
         }
@@ -250,7 +278,7 @@ public class Project2 {
     public void print(){
         if(users.size() == pwHashes.size()) {
             for (int i = 0; i < users.size(); i++)
-                System.out.println(users.get(i) + ":" + pwHashes.get(i));
+                System.out.println(users.get(i) + ":" + "$6$" + salts.get(i) + "$" + pwHashes.get(i));
         }
     }
 
@@ -258,7 +286,7 @@ public class Project2 {
     public void printToFile(PrintWriter out){
         if(users.size() == pwHashes.size()) {
             for (int i = 0; i < users.size(); i++)
-                out.print(users.get(i) + ":" + pwHashes.get(i) + "\n");
+                out.print(users.get(i) + ":" + "$6$" + salts.get(i) + "$" + pwHashes.get(i) + "\n");
         }
     }
 
